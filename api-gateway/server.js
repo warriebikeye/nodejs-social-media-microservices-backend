@@ -1,4 +1,5 @@
 const express = require('express');
+const logger = require('./logger'); // Import the logger
 const axios = require('axios');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
@@ -11,11 +12,18 @@ app.use(express.json());
 // Middleware to check for JWT Token
 const verifyToken = (req, res, next) => {
   const token = req.headers['authorization'];
-  if (!token) return res.status(403).send('Access denied');
+  if (!token)  {
+    logger.warn('Access denied: No token provided');
+    return res.status(403).send('Access denied');
+  }
   
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).send('Invalid token');
+    if (err)  {
+      logger.warn(`Invalid token: ${err.message}`);
+      return res.status(401).send('Invalid token');
+    }
     req.user = decoded;
+    logger.info(`Token verified for user: ${decoded.id}`);
     next();
   });
 };

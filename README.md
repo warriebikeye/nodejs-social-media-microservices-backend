@@ -1,0 +1,1 @@
+This is a Nodejs microservice template i use for backend Nodejs projects. Currently optimized to handle over a million transactions , authenticated and logged, complete with background services and Kafka messaging and Redis caching for database load reduction, can be edited to an e-commerce backend service, 

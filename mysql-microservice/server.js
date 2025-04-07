@@ -70,12 +70,12 @@ app.get('/posts/:id', async (req, res) => {
     if (isNaN(postId) || postId <= 0) {
       return res.status(400).json({ error: 'Invalid post ID' });
     }
-
+3
     const query = `
       SELECT id, user_id, content, created_at
       FROM posts
       WHERE id = ?
-    `;
+    `; 
 
     connection.query(query, [postId], (err, results) => {
       if (err) {

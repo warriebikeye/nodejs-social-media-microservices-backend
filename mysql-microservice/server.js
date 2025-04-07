@@ -96,5 +96,59 @@ app.get('/posts/:id', async (req, res) => {
     return res.status(500).json({ error: 'Unexpected server error' });
   }
 });
+// Edit (Update) a post by ID
+app.put('/posts/:id', (req, res) => {
+  const postId = parseInt(req.params.id, 10);
+  const { content } = req.body;
+
+  if (isNaN(postId) || postId <= 0) {
+    return res.status(400).json({ error: 'Invalid post ID' });
+  }
+
+  if (!content || typeof content !== 'string' || content.trim() === '') {
+    return res.status(400).json({ error: 'Content is required and must be a non-empty string' });
+  }
+
+  const query = 'UPDATE posts SET content = ? WHERE id = ?';
+
+  connection.query(query, [content.trim(), postId], (err, result) => {
+    if (err) {
+      logger?.error(`Database error on PUT /posts/${postId}: ${err.message}`);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    logger?.info(`Post updated successfully: ID ${postId}`);
+    res.status(200).json({ message: 'Post updated successfully' });
+  });
+});
+
+// Delete a post by ID
+app.delete('/posts/:id', (req, res) => {
+  const postId = parseInt(req.params.id, 10);
+
+  if (isNaN(postId) || postId <= 0) {
+    return res.status(400).json({ error: 'Invalid post ID' });
+  }
+
+  const query = 'DELETE FROM posts WHERE id = ?';
+
+  connection.query(query, [postId], (err, result) => {
+    if (err) {
+      logger?.error(`Database error on DELETE /posts/${postId}: ${err.message}`);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    logger?.info(`Post deleted successfully: ID ${postId}`);
+    res.status(200).json({ message: 'Post deleted successfully' });
+  });
+});
 
 app.listen(port, () => console.log(`MySQL Service running on port ${port}`));

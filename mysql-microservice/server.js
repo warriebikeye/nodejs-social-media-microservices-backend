@@ -25,7 +25,7 @@ app.post('/posts', (req, res) => {
     res.status(201).json({ id: results.insertId });
   });
 });
-
+//get all posts
 app.get('/posts', (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -62,6 +62,7 @@ app.get('/posts', (req, res) => {
     });
   });
 });
+//get post by id
 app.get('/posts/:id', async (req, res) => {
   try {
     const postId = parseInt(req.params.id, 10);

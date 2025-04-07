@@ -47,6 +47,51 @@ app.post('/createPost', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/getPosts', verifyToken, async (req, res) => {
+  try {
+    const { page, limit } = req.query;
+    const response = await axios.get(`${process.env.MYSQL_SERVICE_URL}/posts`, {
+      params: { page, limit }
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+app.get('/getPost/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await axios.get(`${process.env.MYSQL_SERVICE_URL}/posts/${id}`);
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).send(error.response?.data || error.message);
+  }
+});
+
+app.put('/editPost/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+    const response = await axios.put(`${process.env.MYSQL_SERVICE_URL}/posts/${id}`, updatedData);
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).send(error.response?.data || error.message);
+  }
+});
+
+app.delete('/deletePost/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await axios.delete(`${process.env.MYSQL_SERVICE_URL}/posts/${id}`);
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).send(error.response?.data || error.message);
+  }
+});
+
+
+
 app.get('/comments/:postId', verifyToken, async (req, res) => {
   try {
     const { postId } = req.params;

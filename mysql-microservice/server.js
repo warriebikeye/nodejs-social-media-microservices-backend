@@ -62,5 +62,39 @@ app.get('/posts', (req, res) => {
     });
   });
 });
+app.get('/posts/:id', async (req, res) => {
+  try {
+    const postId = parseInt(req.params.id, 10);
+
+    if (isNaN(postId) || postId <= 0) {
+      return res.status(400).json({ error: 'Invalid post ID' });
+    }
+
+    const query = `
+      SELECT id, user_id, content, created_at
+      FROM posts
+      WHERE id = ?
+    `;
+
+    connection.query(query, [postId], (err, results) => {
+      if (err) {
+        logger?.error(`Database error on GET /posts/${postId}: ${err.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      if (!results || results.length === 0) {
+        logger?.info(`Post not found for ID: ${postId}`);
+        return res.status(404).json({ message: 'Post not found' });
+      }
+
+      logger?.info(`Post retrieved successfully: ID ${postId}`);
+      return res.status(200).json(results[0]);
+    });
+
+  } catch (error) {
+    logger?.error(`Unexpected error on GET /posts/:id - ${error.message}`);
+    return res.status(500).json({ error: 'Unexpected server error' });
+  }
+});
 
 app.listen(port, () => console.log(`MySQL Service running on port ${port}`));

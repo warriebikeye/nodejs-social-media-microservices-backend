@@ -10,23 +10,31 @@ const app = express();
 app.use(express.json());
 
 // Middleware to check for JWT Token
-const verifyToken = (req, res, next) => {
-  const token = req.headers['authorization'];
-  if (!token)  {
-    logger.warn('Access denied: No token provided');
-    return res.status(403).send('Access denied');
-  }
-  
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err)  {
-      logger.warn(`Invalid token: ${err.message}`);
-      return res.status(401).send('Invalid token');
+const jwt = require('jsonwebtoken');
+const logger = require('../utils/logger'); // Adjust to your logger path
+
+const verifyToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers?.authorization;
+    if (!authHeader) {
+      logger.warn('Access denied: No token provided');
+      return res.status(403).json({ error: 'Access denied: No token provided' });
     }
+
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+
     req.user = decoded;
-    logger.info(`Token verified for user: ${decoded.id}`);
+    logger.info(`Token verified for user ID: ${decoded.id}`);
     next();
-  });
+  } catch (error) {
+    logger.warn(`Token verification failed: ${error.message}`);
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
 };
+
+module.exports = verifyToken;
+
 
 // Routes
 app.post('/createPost', verifyToken, async (req, res) => {
